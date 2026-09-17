@@ -1,0 +1,34 @@
+# Ignore everything
+*
+
+# Allow these files
+!.gitignore
+!CLAUDE.md
+!RTK.md
+!README.md
+!SETUP.md
+!settings.template.json
+!knowhow/
+!knowhow/**
+
+# Allow hooks directory and its contents
+!hooks/
+!hooks/**
+
+# Allow skills directory and its contents
+!skills/
+!skills/**
+
+# Allow agents directory and its contents
+!agents/
+!agents/**
+
+# Allow shared references directory and its contents
+!references/
+!references/**
+
+# But keep per-skill improvement logs untracked
+skills/**/improvement-log.md
+
+# Claude Code がアカウント同期で生成する skill 群（tengu_account_skills_sync_enabled）
+skills/synced/

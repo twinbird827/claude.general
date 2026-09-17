@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "includeCoAuthoredBy": false,
+  "showThinkingSummaries": true,
+  "plansDirectory": "docs/plans",
+  "permissions": {
+    "allow": [
+      "Glob(./**/*)",
+      "Grep(./**/*)",
+      "Read(./**/*)",
+      "Read(~/.claude/skills/**)",
+      "Read(~/.claude/references/**)",
+      "Edit(./**/*)",
+      "Bash(iconv:*)",
+      "Bash(wc:*)",
+      "Bash(diff:*)",
+      "Bash(touch:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(chmod:*)",
+      "Bash(awk:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(sed:*)",
+      "Bash(jq:*)",
+      "Bash(echo:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(glab mr diff:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(git status:*)",
+      "Bash(git blame:*)",
+      "Bash(git branch:*)",
+      "Bash(git grep:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git remote -v:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh issue create:*)",
+      "Bash(gh issue comment:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh release list:*)",
+      "Bash(gh release view:*)",
+      "Bash(gh workflow list:*)",
+      "Bash(gh workflow view:*)",
+      "Bash(gh search code:*)",
+      "Bash(gh search issues:*)",
+      "Bash(gh search prs:*)",
+      "Bash(glab mr list:*)",
+      "Bash(glab mr view:*)",
+      "Bash(glab issue list:*)",
+      "Bash(glab issue view:*)",
+      "Bash(glab repo view:*)",
+      "Bash(glab ci list:*)",
+      "Bash(glab ci view:*)",
+      "Bash(glab ci status:*)",
+      "Bash(glab release list:*)",
+      "Bash(glab release view:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(dotnet clean:*)",
+      "Bash(dotnet test:*)",
+      "Bash(dotnet pack:*)",
+      "Bash(dotnet new:*)",
+      "WebSearch",
+      "WebFetch",
+      "mcp__context7",
+      "mcp__searxng",
+      "mcp__firecrawl-mcp",
+      "mcp__playwright",
+      "Skill(standard-code-review:*)",
+      "Skill(deep-code-review:*)",
+      "Skill(plan-refinement-loop:*)",
+      "Skill(simplification-review:*)",
+      "Skill(ponytail:ponytail-review:*)",
+      "Bash(rm .tmp/keep-turn)",
+      "Bash(rm .tmp/*.md)",
+      "Bash(cd:*)"
+    ],
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/.envrc)",
+      "Read(**/*secret*)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Bash(sudo:*)",
+      "Bash(rm -rf /:*)",
+      "Bash(rm -rf ~:*)",
+      "Bash(git branch -D:*)",
+      "Bash(dd:*)",
+      "Bash(shutdown:*)",
+      "Bash(reboot:*)",
+      "Bash(dotnet nuget push:*)"
+    ],
+    "ask": [
+      "Bash(dotnet run:*)",
+      "Bash(dotnet publish:*)",
+      "Bash(dotnet add package:*)",
+      "Bash(dotnet remove package:*)",
+      "Bash(dotnet tool install:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git stash:*)",
+      "Bash(git clone:*)",
+      "Bash(git restore --staged:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git reset:*)",
+      "Bash(git checkout:*)",
+      "Bash(gh pr checkout:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(gh pr edit:*)",
+      "Bash(gh issue close:*)",
+      "Bash(glab mr checkout:*)",
+      "Bash(glab mr merge:*)",
+      "Bash(glab api:*)",
+      "Bash(glab issue close:*)",
+      "Bash(mv:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "rtk hook claude"
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command \". '~\\.claude\\hooks\\permission-extension.ps1'\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command \". '~\\.claude\\hooks\\notify.ps1' -Message 'Task completed!'\""
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command \". '~\\.claude\\hooks\\keep-turn-guard.ps1'\""
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command \". '~\\.claude\\hooks\\notify.ps1' -Message 'Claude Code is waiting for you.'\""
+          }
+        ]
+      }
+    ]
+  },
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
+    },
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "JuliusBrussee/caveman"
+      }
+    }
+  },
+  "env": {
+    "ANTHROPIC_BASE_URL": "http://127.0.0.1:8787",
+    "ENABLE_TOOL_SEARCH": "1"
+  },
+  "language": "ja",
+  "alwaysThinkingEnabled": true,
+  "enabledPlugins": {
+    "claude-md-management@claude-plugins-official": true,
+    "ponytail@ponytail": true,
+    "caveman@caveman": true
+  }
+}
