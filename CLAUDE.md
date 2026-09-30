@@ -21,7 +21,7 @@
 - 汎用の探索/調査が要るときは `Explore`=広域検索、`general-purpose`=多段リサーチ。独立調査は並列起動。結果は**簡潔に要約**して取り込む。
 
 ## Git ワークフロー
-- **追跡ファイルの一連の編集を終えたとき・Git 操作（commit / push / branch / MR / issue）の前は `~/.claude/references/mr-workflow.md` を Read して従う。base ブランチへ直接 commit しない。止まるのは同文書の停止条件とマージ本体の指示待ちだけ。**
+- **追跡ファイルの一連の編集を終えたとき・Git 操作（commit / push / branch / MR / issue）の前は `~/.claude/references/git-workflow.md` を Read して従う。base ブランチへ直接 commit しない。止まるのは同文書の停止条件とマージ本体の指示待ちだけ。**
 
 ## ツールルーティング（MCP）
 
@@ -41,7 +41,7 @@
 - 複数ページ収集・サイト内 URL 列挙は Firecrawl（`firecrawl_crawl` / `firecrawl_map`）。
 
 ## プランファイル
-- プランファイルの姿勢・書式の正本は `~/.claude/references/plan-doctrine.md`。起案・精査・実装の前に読む。節構成・サイドカーの使い分けを含め規約は正本に一本化されている（ここに再掲しない）。
+- プランファイルの姿勢・書式の正本は `~/.claude/references/plan-doctrine.md`。起案・精査・実装の前に読む。節構成を含め規約は正本に一本化されている（ここに再掲しない）。
 
 ## RTK
 - Bash コマンドは hook で自動的に `rtk` 経由になり出力がフィルタされる。生出力が要るコマンドは hook 側で除外済み（除外の一覧・設定と増減の手順・一致規則は `~/.claude/SETUP.md` の RTK 節）なので、`rtk proxy` を前置せず素で書く。

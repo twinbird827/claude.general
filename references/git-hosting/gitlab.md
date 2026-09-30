@@ -15,4 +15,4 @@
 | issue 検索 | `glab issue list --search "<keyword>"` | |
 | issue 作成 | `glab api projects/:fullpath/issues --method POST --raw-field title="<title>" --field description=@.tmp/<file> \| jq -r '.iid, .web_url'` | `glab issue create` は本文を argv に載せる `-d` しか持たない（1.86.0 に本文をファイルから読むフラグは無い） |
 | issue へ追記 | `glab api projects/:fullpath/issues/<N>/notes --method POST --field body=@.tmp/<file> > /dev/null` | `glab issue note` は本文を argv に載せる `-m` しか持たない（1.86.0）。`glab issue update -d` は本文を置換するので追記に使わない |
-| issue を閉じる | `glab issue close <N>` | closing keyword で閉じられないときの手動クローズ（`~/.claude/references/mr-workflow.md` の 規則 節） |
+| issue を閉じる | `glab issue close <N>` | closing keyword で閉じられないときの手動クローズ（`~/.claude/references/git-workflow.md` の 規則 節） |

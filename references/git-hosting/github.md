@@ -15,4 +15,4 @@
 | issue 検索 | `gh issue list --search "<keyword>"` | |
 | issue 作成 | `gh issue create -t "<title>" -F .tmp/<file>` | |
 | issue へ追記 | `gh issue comment <N> -F .tmp/<file>` | `gh issue edit` は本文を置換するので追記に使わない |
-| issue を閉じる | `gh issue close <N>` | closing keyword で閉じられないときの手動クローズ（`~/.claude/references/mr-workflow.md` の 規則 節） |
+| issue を閉じる | `gh issue close <N>` | closing keyword で閉じられないときの手動クローズ（`~/.claude/references/git-workflow.md` の 規則 節） |

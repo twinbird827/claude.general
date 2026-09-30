@@ -2,20 +2,28 @@
 # the condition. Judges the whole Bash command once, split into segments on
 # && || ; | & and newlines -- the set the permissions list splits on
 # (knowhow/pipe-stage-hook-removal.md).
-# Two rules:
+# Three rules:
 # 1. `glab api`: a segment is in scope when it carries both the words `glab`
 #    and `api`, in any order -- not as adjacent tokens, so a persistent flag
 #    between them (`glab -R owner/repo api ...`) cannot hide the call. An
-#    in-scope segment is left silent (the permissions list decides) only when
-#    it carries an explicit POST or PUT method (upper case) AND carries no
-#    other method token. Anything else -> `ask`: DELETE, a lower-case method,
-#    a method-less GET, and a segment that lost its method because a
-#    separator inside an argument value split the call. Two forms stay silent:
+#    in-scope segment is left silent by this rule (rule 2 then asks outside
+#    auto mode, since `glab api` is an ask prefix; the permissions list
+#    decides the rest) only when it carries an explicit POST or PUT method
+#    (upper case) AND carries no other method token. Anything else -> `ask`:
+#    DELETE, a lower-case method, a method-less GET, and a segment that lost
+#    its method because a separator inside an argument value split the call.
+#    Two forms stay silent:
 #    a segment that ends with a POST token (`-F note="x --method POST|y"
 #    --method DELETE`) leaves the real DELETE in the next segment, and a split
 #    before `api` (`glab -R "a&b" api x --method DELETE`) puts the two words
 #    in separate segments, so neither is in scope.
-# 2. `rm`: a segment is safe when it carries at most one flag made of one or
+# 2. ask prefixes (moved out of settings `permissions.ask`): a segment, after
+#    stripping a leading `rtk proxy ` or `rtk `, that equals a prefix or starts
+#    with the prefix plus a space -> `ask` outside auto mode (an unreadable mode
+#    counts as outside); silent in auto mode, so the classifier judges. Settings
+#    ask cannot do this: it is skipped when rtk rewrites the call, and prompts
+#    even in auto mode when rtk does not.
+# 3. `rm`: a segment is safe when it carries at most one flag made of one or
 #    two of the letters `r`/`f` (`-r`, `-f`, `-rf`, `-fr`), ends with its
 #    last target, and every target is a plain relative path under ./.tmp/
 #    (no `..`, no glob, no quoting, no expansion, no shell metacharacters).
@@ -35,7 +43,9 @@ try {
   # Read stdin via the raw handle: [Console]::In is empty when the harness runs
   # powershell.exe with -WindowStyle Hidden (no console attached).
   $raw = (New-Object IO.StreamReader([Console]::OpenStandardInput())).ReadToEnd()
-  $cmd = ($raw | ConvertFrom-Json).tool_input.command
+  $in = $raw | ConvertFrom-Json
+  $cmd = $in.tool_input.command
+  $mode = $in.permission_mode
 } catch { $cmd = $null }
 function Ask($why) { '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"' + $why + '"}}' }
 if (-not $cmd) { Ask 'the command could not be read or parsed'; exit 0 }
@@ -45,6 +55,16 @@ $apiWord = '(^|[^A-Za-z0-9_-])api([^A-Za-z0-9_-]|\z)'
 $writeOk = '(^|\s)(-X|--method)[\s=]*[''"]?(POST|PUT)([''"]|\s|\z)'
 $otherMethod = '(^|\s)(-X|--method)(?![\s=]*[''"]?(POST|PUT)([''"]|\s|\z))'
 if (@($parts | Where-Object { $_ -cmatch $glabWord -and $_ -cmatch $apiWord -and ($_ -cnotmatch $writeOk -or $_ -cmatch $otherMethod) }).Count) { Ask 'glab api without an explicit POST or PUT method in the same segment, or with another method token alongside it'; exit 0 }
+$askPrefixes = @(
+  'dotnet run', 'dotnet publish', 'dotnet add package', 'dotnet remove package', 'dotnet tool install',
+  'git add', 'git commit', 'git stash', 'git clone', 'git restore --staged', 'git push', 'git pull',
+  'git reset', 'git checkout', 'git switch',
+  'gh pr checkout', 'gh pr create', 'gh pr merge', 'gh pr edit', 'gh issue close',
+  'glab mr checkout', 'glab mr merge', 'glab api', 'glab issue close',
+  'mv', 'curl', 'wget'
+)
+$askHit = @($parts | ForEach-Object { $_ -creplace '^rtk (proxy )?', '' } | Where-Object { $s = $_; @($askPrefixes | Where-Object { $s -ceq $_ -or $s.StartsWith("$_ ", [StringComparison]::Ordinal) }).Count })
+if ($askHit.Count -and $mode -ne 'auto') { Ask 'the command matches an ask prefix outside auto mode'; exit 0 }
 $safe = "^rm( -[rf]{1,2})?( \.tmp(/[A-Za-z0-9_-][A-Za-z0-9._-]*)+)+\z"
 $rmSafe = @($parts | Where-Object { $_ -cmatch $safe })
 $rmRisky = @($parts | Where-Object { $_ -cmatch '(^|[^A-Za-z0-9_-])rm([^A-Za-z0-9_-]|\z)' -and $_ -cnotmatch $safe })

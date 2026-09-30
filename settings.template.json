@@ -3,6 +3,12 @@
   "includeCoAuthoredBy": false,
   "showThinkingSummaries": true,
   "plansDirectory": "docs/plans",
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "Merge Without Review exception: for the repository gitlab.able-biott.jp/manifacture/claude-general only, merging a merge request (including one the agent authored) with `glab mr merge`, including `-d`/`--remove-source-branch` which deletes the merged source branch on the remote, is allowed, and so is the post-merge cleanup limited to `git switch <base>`, `git pull --ff-only --prune`, and `git branch -d <merged branch>`. Rationale, not a condition to verify: the repository is maintained by the user alone and the user reviews each merge request in the conversation. This does not cover flags that bypass required approvals or pipelines, nor any other destructive git operation (`reset --hard`, `clean`, `checkout .`, force-push, `branch -D`).This is also a Git Destructive exception, limited to deleting the just-merged source branch of that repository on the remote."
+    ]
+  },
   "permissions": {
     "allow": [
       "Glob(./**/*)",
@@ -84,7 +90,6 @@
       "Skill(plan-refinement-loop:*)",
       "Skill(simplification-review:*)",
       "Skill(ponytail:ponytail-review:*)",
-      "Bash(rm .tmp/keep-turn)",
       "Bash(rm .tmp/*.md)",
       "Bash(cd:*)"
     ],
@@ -104,34 +109,7 @@
       "Bash(reboot:*)",
       "Bash(dotnet nuget push:*)"
     ],
-    "ask": [
-      "Bash(dotnet run:*)",
-      "Bash(dotnet publish:*)",
-      "Bash(dotnet add package:*)",
-      "Bash(dotnet remove package:*)",
-      "Bash(dotnet tool install:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git stash:*)",
-      "Bash(git clone:*)",
-      "Bash(git restore --staged:*)",
-      "Bash(git push:*)",
-      "Bash(git pull:*)",
-      "Bash(git reset:*)",
-      "Bash(git checkout:*)",
-      "Bash(gh pr checkout:*)",
-      "Bash(gh pr create:*)",
-      "Bash(gh pr merge:*)",
-      "Bash(gh pr edit:*)",
-      "Bash(gh issue close:*)",
-      "Bash(glab mr checkout:*)",
-      "Bash(glab mr merge:*)",
-      "Bash(glab api:*)",
-      "Bash(glab issue close:*)",
-      "Bash(mv:*)",
-      "Bash(curl:*)",
-      "Bash(wget:*)"
-    ]
+    "ask": []
   },
   "hooks": {
     "PreToolUse": [
@@ -156,10 +134,6 @@
           {
             "type": "command",
             "command": "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command \". '~\\.claude\\hooks\\notify.ps1' -Message 'Task completed!'\""
-          },
-          {
-            "type": "command",
-            "command": "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command \". '~\\.claude\\hooks\\keep-turn-guard.ps1'\""
           }
         ]
       }

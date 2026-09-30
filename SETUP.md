@@ -271,6 +271,7 @@ rtk hook check "git status"        # rtk git status
 - 一致は単語単位の前方一致（除外語の直後は行末か空白で、語の途中では一致しない）
 - `&&` / `||` / `;` は各段に個別に効く（`ls && git status` は `ls && rtk git status`）。パイプは先頭段だけが判定され、先頭段が除外なら行全体が書き換わらない（`ls | rg foo` は無書き換え）
 - hook が無出力になる行は通常の `permissions` 判定に戻るので `settings.json` の allow が要る（上の一致規則で書き換えが起きない行、rtk がラッパを持たないコマンド、コマンド置換・ファイルへのリダイレクト（`/dev/null` と `2>&1` は除く）・heredoc を含む行などが該当。`ls -la` と `findstr x` がその例）。書き換えを返す行でも、書き換え前の各段すべてが allow 規則に一致しない限り自動承認は付かない
+- 書き換えを返す行では settings の `permissions.ask` が効かない（2026-09-24 実測、README の PreToolUse Hook 節）。そのため ask の項目は settings でなく `hooks/permission-extension.ps1` が持ち、auto 以外のモードでだけ `ask` を返す
 - 上の `rtk hook check` は書き換え可否だけを見るので、この無出力条件の確認には使えない — ファイルへのリダイレクトを含む行を「書き換えあり」と答える（0.43.0 で実測）
 - 除外の一覧は上の `exclude_commands` ブロックが正本。増減するときは正本のブロックを先に直し、そのうえで各PCの config.toml を更新する。allow は除外の有無と独立に要る（除外を外しても消さない）ので、`settings.template.json` と各PCの `settings.json` を同じ内容に保つ（permission 判定に実際に使われるのは `settings.json` 側）
 
