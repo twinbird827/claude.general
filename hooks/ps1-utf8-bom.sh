@@ -8,8 +8,7 @@
 # Write drops an existing BOM unless the content starts with U+FEFF; Edit keeps it.
 # Files starting with "#!" are skipped (a BOM breaks the shebang under pwsh on Linux).
 # Files with a BOM (UTF-8 / UTF-16 LE / BE) pass through (Edit writes UTF-16LE back as is; prefixing gives EF BB BF FF FE, which PS 5.1 cannot run).
-# BOM-less UTF-16LE (Write dropped the BOM) is not prefixed but reported via exit 2.
-# Never fails the tool call.
+# When no BOM can be added (BOM-less UTF-16LE, temp file or write-back failure), report on stderr and exit 2; never fails the tool call.
 
 input=$(cat)
 [[ $input =~ \"file_path\"[[:space:]]*:[[:space:]]*\"([^\"]*)\" ]] || exit 0
@@ -25,8 +24,8 @@ if [[ $head == ??00* ]]; then
   exit 2
 fi
 
-tmp=$(mktemp) || exit 0
-{ printf '\357\273\277'; cat "$file"; } > "$tmp" || { rm -f "$tmp"; exit 0; }
+tmp=$(mktemp) || { echo "ps1-utf8-bom: cannot create a temp file; no BOM added to $file" >&2; exit 2; }
+{ printf '\357\273\277'; cat "$file"; } > "$tmp" || { rm -f "$tmp"; echo "ps1-utf8-bom: cannot write $tmp; no BOM added to $file" >&2; exit 2; }
 if ! cat "$tmp" > "$file"; then
   echo "ps1-utf8-bom: failed to rewrite $file; BOM + original content kept in $tmp" >&2
   exit 2

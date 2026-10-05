@@ -40,6 +40,8 @@ t x.ps11       'ab'                 6162
 t x.txt        'ab'                 6162
 t crlf.ps1     'a\r\nb\r\n'         efbbbf610d0a620d0a
 t empty.ps1    ''                   efbbbf
+TMPDIR=/nonexistent t tmpfail.ps1 'ab' 6162 2
+[[ $err == *ps1-utf8-bom:* ]]; report tmpfail.ps1-stderr $? "err=$err"
 
 # Write-back failure: file untouched, exit 2, temp file named on stderr keeps BOM + original.
 f=$dir/readonly.ps1
