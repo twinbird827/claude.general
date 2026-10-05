@@ -23,6 +23,9 @@
 #    counts as outside); silent in auto mode, so the classifier judges. Settings
 #    ask cannot do this: it is skipped when rtk rewrites the call, and prompts
 #    even in auto mode when rtk does not.
+#    Merge prefixes (`gh pr merge`, `glab mr merge`) -> `ask` in every mode:
+#    in auto mode the classifier blocks them as Merge Without Review with no
+#    ask fallback, while the user decides each merge in the conversation.
 # 3. `rm`: a segment is safe when it carries at most one flag made of one or
 #    two of the letters `r`/`f` (`-r`, `-f`, `-rf`, `-fr`), ends with its
 #    last target, and every target is a plain relative path under ./.tmp/
@@ -59,12 +62,15 @@ $askPrefixes = @(
   'dotnet run', 'dotnet publish', 'dotnet add package', 'dotnet remove package', 'dotnet tool install',
   'git add', 'git commit', 'git stash', 'git clone', 'git restore --staged', 'git push', 'git pull',
   'git reset', 'git checkout', 'git switch',
-  'gh pr checkout', 'gh pr create', 'gh pr merge', 'gh pr edit', 'gh issue close',
-  'glab mr checkout', 'glab mr merge', 'glab api', 'glab issue close',
+  'gh pr checkout', 'gh pr create', 'gh pr edit', 'gh issue close',
+  'glab mr checkout', 'glab api', 'glab issue close',
   'mv', 'curl', 'wget'
 )
-$askHit = @($parts | ForEach-Object { $_ -creplace '^rtk (proxy )?', '' } | Where-Object { $s = $_; @($askPrefixes | Where-Object { $s -ceq $_ -or $s.StartsWith("$_ ", [StringComparison]::Ordinal) }).Count })
-if ($askHit.Count -and $mode -ne 'auto') { Ask 'the command matches an ask prefix outside auto mode'; exit 0 }
+$alwaysAskPrefixes = @('gh pr merge', 'glab mr merge')
+$stripped = @($parts | ForEach-Object { $_ -creplace '^rtk (proxy )?', '' })
+function PrefixHit($prefixes) { @($stripped | Where-Object { $s = $_; @($prefixes | Where-Object { $s -ceq $_ -or $s.StartsWith("$_ ", [StringComparison]::Ordinal) }).Count }).Count }
+if (PrefixHit $alwaysAskPrefixes) { Ask 'the command merges a merge request'; exit 0 }
+if ((PrefixHit $askPrefixes) -and $mode -ne 'auto') { Ask 'the command matches an ask prefix outside auto mode'; exit 0 }
 $safe = "^rm( -[rf]{1,2})?( \.tmp(/[A-Za-z0-9_-][A-Za-z0-9._-]*)+)+\z"
 $rmSafe = @($parts | Where-Object { $_ -cmatch $safe })
 $rmRisky = @($parts | Where-Object { $_ -cmatch '(^|[^A-Za-z0-9_-])rm([^A-Za-z0-9_-]|\z)' -and $_ -cnotmatch $safe })

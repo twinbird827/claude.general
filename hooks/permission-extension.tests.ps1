@@ -43,7 +43,13 @@ $cases = @(
   @{ cmd = 'git status'; want = '' },
   @{ cmd = 'git pushx'; want = '' },
   @{ cmd = 'git push'; mode = ''; want = 'ask' },
-  @{ cmd = 'glab api projects/x --method POST'; want = 'ask' }
+  @{ cmd = 'glab api projects/x --method POST'; want = 'ask' },
+  @{ cmd = 'glab mr merge 1 -d -y --auto-merge=false'; mode = 'auto'; want = 'ask' },
+  @{ cmd = 'rtk glab mr merge 1 -d -y --auto-merge=false'; mode = 'auto'; want = 'ask' },
+  @{ cmd = 'gh pr merge 1 --merge --delete-branch'; mode = 'auto'; want = 'ask' },
+  @{ cmd = 'glab mr merge 1'; want = 'ask' },
+  @{ cmd = 'glab mr view 1 && glab mr merge 1'; mode = 'auto'; want = 'ask' },
+  @{ cmd = 'glab mr mergex'; mode = 'auto'; want = '' }
 )
 function Decision($stdin) {
   $out = $stdin | powershell.exe -NoProfile -ExecutionPolicy Bypass -File $hook

@@ -36,7 +36,7 @@ Claude Code のグローバル設定ディレクトリ（`~/.claude`）を複数
 │   ├── review-criteria.md          # 指摘の形・重大度・クラス・Measurement・票勘定・対象引数
 │   └── git-hosting/                # gitlab.md / github.md のコマンド表
 ├── hooks/
-│   ├── permission-extension.ps1        # PreToolUse: .tmp/ 配下の rm を自動承認し glab api は書き込み形だけ通す。ask の項目は auto 以外でだけ ask
+│   ├── permission-extension.ps1        # PreToolUse: .tmp/ 配下の rm を自動承認し glab api は書き込み形だけ通す。ask の項目は auto 以外でだけ ask、`glab mr merge` / `gh pr merge` で始まる段は全モードで ask
 │   ├── permission-extension.tests.ps1  # 上の self-check
 │   ├── notify.ps1                      # Stop / Notification: 前景が VSCode でなければ MessageBox
 │   └── lf-to-crlf.sh                   # PostToolUse: LF → CRLF 正規化（現在は未登録）
@@ -114,13 +114,14 @@ rm 側は auto モードの無確認範囲を `.tmp/` 配下の `rm` だけに�
 
 同じ script が `glab api` の呼び出しも判定する。ask の項目の `glab api` は auto モードでは classifier に任せるが、この規則の `ask` はモードによらず prompt を出す（下の モード別の実測）。permission 規則で閉じない理由は issue #105 — 引数順・表記のバリエーションを規則で網羅できず、docs も引数を縛る Bash 規則は security boundary でないと注記している。
 
-ask の項目（`git push`・`glab mr merge`・`curl` など 27 件）も同じ script が持ち、settings の `permissions.ask` は空にしてある。狙いは「auto モードでは確認無しで classifier が判定し、それ以外のモードでは確認が出る」。settings の ask ではこれを書けない — rtk が書き換えた呼び出しでは効かず classifier へ回り、書き換えが無い呼び出しでは auto モードでも prompt を出す（下の モード別の実測）。hook は auto 以外（`permission_mode` が読めないときを含む）でだけ `ask` を返し、auto では無出力にする。
+ask の項目（`git push`・`glab api`・`curl` など 25 件）も同じ script が持ち、settings の `permissions.ask` は空にしてある。狙いは「auto モードでは確認無しで classifier が判定し、それ以外のモードでは確認が出る」。settings の ask ではこれを書けない — rtk が書き換えた呼び出しでは効かず classifier へ回り、書き換えが無い呼び出しでは auto モードでも prompt を出す（下の モード別の実測）。hook は auto 以外（`permission_mode` が読めないときを含む）でだけ `ask` を返し、auto では無出力にする。
 
 **スクリプト:** [hooks/permission-extension.ps1](hooks/permission-extension.ps1)
 - 判定仕様（段の分け方、`allow` / `ask` / 無出力 の 3 分岐とその条件・理由）は `hooks/permission-extension.ps1`（冒頭コメントと `[regex]::Split` の分割パターン）が正本。無出力の経路は下の `permissions.allow` のバレットが受ける
 - handler は `if` 無しで登録し、全 Bash 呼び出しで script を回す。`if` と settings の permission 規則は前方一致で、`rtk proxy glab api …` のような wrapper 前置形を拾えない（docs の wrapper 剥がしは固定リストで `rtk proxy` を含まない）。代償は呼び出しごとの powershell.exe 起動と、`ask` へ落ちる段が増えること（`git rm`、`glab mr create --description "see api docs"`、それらの語を含む自由文を argv に載せる MR タイトル・commit メッセージのような形）。stdin/JSON が読めないときに `ask` へ倒す fail-closed も、`if` があった頃の `rm` 呼び出し限定から全 Bash 呼び出しへ射程が広がっている
-- `permissions.ask` は空にしてある — 評価順は deny → ask → allow で、ask に残すと hook の allow も prompt に負ける（docs: Extend permissions with hooks）。項目の一覧は `hooks/permission-extension.ps1` の `$askPrefixes` が正本
-- auto モードで ask の項目を classifier に任せた代わりに、このリポジトリの MR のマージとマージ後の後処理（base への切り替え・ff-only の pull・マージ済み branch の削除）が既定ルール `Merge Without Review` で block されうる（!98 のマージと !97 の後処理で実測）。`settings.json` の `autoMode.allow` に `"$defaults"` と、このリポジトリに限った例外の 1 文を置いて塞ぐ。ユーザー一人が保守し、MR のレビューは会話の中で行うため。`autoMode` はユーザー設定からしか読まれない
+- `permissions.ask` は空にしてある — 評価順は deny → ask → allow で、ask に残すと hook の allow も prompt に負ける（docs: Extend permissions with hooks）。項目の一覧は `hooks/permission-extension.ps1` の `$askPrefixes` と `$alwaysAskPrefixes` が正本
+- MR のマージ（`glab mr merge` / `gh pr merge`）は、auto モードで classifier が既定ルール `Merge Without Review` で block し、ask へのフォールバックが無い（!98 で実測、`autoMode.allow` の例外を置いても非決定的に block された）。そのため `$alwaysAskPrefixes` に分け、モードによらず `ask` を返して block の代わりに prompt を出す
+- マージ後の後処理（base への切り替え・ff-only の pull・マージ済み branch の削除）は auto モードでは classifier が判定し、`Merge Without Review` で block されうる（!97 で実測）。`settings.json` の `autoMode.allow` に `"$defaults"` と、リポジトリを限らない例外の 1 文を置いて塞ぐ。マージは git-workflow のマージ手順でユーザーの指示を受けてだけ行い、MR のレビューは会話の中で行うため。例外の文はマージ本体も含む。`glab mr merge` / `gh pr merge` で始まる段には hook の `ask` が先に効き、例外が効くのはサブコマンドの前にフラグや環境変数を置く形（`glab -R a/b mr merge`）のような前方一致に当たらない形だけで、その形は auto モードで確認なしに通りうる。`autoMode` はユーザー設定からしか読まれない
 - 代わりに `permissions.allow` へ `Bash(rm .tmp/*.md)` / `Bash(cd:*)` を掲載してある。リスト照合は段ごとに効くので、連結した呼び出しで hook が無出力に倒したときここが受ける（`cd <dir> && rm .tmp/<file>` の `cd` 段も同じで、規則が無いと段判定が揃わず classifier 送りになる。`cd` 自体は cwd を変えるだけ）。ワイルドカードは `.*` に展開され `..` も他ディレクトリも止めないが、その形は hook が先に `ask` を返す
 
 **注意点:**
@@ -172,7 +173,7 @@ Claude Code の応答が終わって指示待ちになったとき（`Stop`）�
 - **`-File` は `~` を解決しない**（`-File パラメーターの引数 '~\...' は存在しません` で失敗する）。`-Command ". '~\...'"` で PowerShell 側にパスを解決させること
 - `MessageBoxOptions.DefaultDesktopOnly` は `Show()` の**第6引数**。第5引数は `MessageBoxDefaultButton` なので、`'Button1'` を省くと型変換エラーで落ちる
 - `MessageBox::Show` はボタンが押されるまでブロックする。Hook がタイムアウトするまで次のターンが始まらない
-- **auto モードでは ask の項目のコマンドも確認なしで実行される**（`hooks/permission-extension.ps1` が auto では無出力にし、classifier が判定する）ため、承認プロンプト自体が出ず `Notification` も発火しない。承認待ちの通知が欲しい場合は auto モードを使わないこと（例外: hook が返す `ask` は auto モードでも prompt を出すので、`.tmp/` 外の `rm` と、書き込み形でない `glab api` では auto でも `Notification` が発火する）
+- **auto モードでは ask の項目のコマンドも確認なしで実行される**（`hooks/permission-extension.ps1` が auto では無出力にし、classifier が判定する）ため、承認プロンプト自体が出ず `Notification` も発火しない。承認待ちの通知が欲しい場合は auto モードを使わないこと（例外: hook が返す `ask` は auto モードでも prompt を出すので、`.tmp/` 外の `rm`、書き込み形でない `glab api`、`glab mr merge` / `gh pr merge` で始まる段では auto でも `Notification` が発火する）
 
 ---
 

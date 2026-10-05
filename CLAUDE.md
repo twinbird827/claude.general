@@ -31,6 +31,8 @@
 | Web 検索 | `searxng_web_search` / `WebSearch` のどちらでもよい（実測で結果の質は同等） | 逐語性が要る調査は、snippet が原文由来の `searxng_web_search` |
 | ブラウザ操作 | Playwright MCP（`mcp__playwright__*`） | アクセシビリティツリー駆動 → 操作前に `browser_snapshot` で構造把握 |
 
+- **deferred ツール（system-reminder に名前だけ載るツール）は `ToolSearch` の `select:<name>` で読み込む。`tool_search_tool_regex` の 0 件はツールが無い証拠にならない。** `ToolSearch` 自体が初期一覧に無ければ、`tool_search_tool_regex` に `^ToolSearch$` を渡して読み込む。
+
 ### Web 取得
 
 - **既定は `web_url_read`（searxng MCP）。** 生の markdown が返るため取得失敗が目で見える。`startChar`/`section`/`readHeadings` でページング可、PDF も可。
