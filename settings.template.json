@@ -127,6 +127,17 @@
         ]
       }
     ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/ps1-utf8-bom.sh"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",

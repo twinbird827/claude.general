@@ -12,6 +12,9 @@
 ## markdown の書式
 - **markdown は文の途中で改行しない** — 1バレット・1段落を1行に収める（行長は問わない）。改行が構文の意味を持つ領域（fenced code block の中身・テーブル行・YAML frontmatter・行末2スペースの hard break）と blockquote、ツールが自動生成する markdown は対象外。
 
+## PowerShell スクリプトの文字コード
+- **`.ps1` / `.psm1` / `.psd1` を BOM 無し（BOM 無し UTF-8・Shift-JIS）にしない** — Windows PowerShell 5.1 は BOM 無しを cp932 で読み、日本語リテラルを壊すうえ、LF 改行だと全角で終わる行の改行を食って次の行を消す（実測: `function` 定義行が消え `CommandNotFoundException`）。`Write` は内容が U+FEFF で始まらないと既存の BOM も落とすが、PostToolUse フック `hooks/ps1-utf8-bom.sh` が `Write`/`Edit` 後に自動で付ける（先頭 `#!` のファイルは除く）。BOM を外す変更はしない。
+
 ## 一時ファイル・worktree
 - **一時ファイル・worktree・作業コピーを working root 外（`/tmp`・`%TEMP%`・ホーム等）に作らない**（root 外は毎回パーミッション確認が出るため）。repo 内の gitignore 済み `.tmp/` に作り、不要になったら削除。
 

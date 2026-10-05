@@ -1,15 +1,15 @@
-# firecrawl-searxng-setup.ps1
-# PCÄ‹N“®Œã‚É WSL2 ‚ğ‹N“®‚µADocker ƒRƒ“ƒeƒi‚ğ—§‚¿ã‚°Aportproxy ‚ğİ’è‚·‚é
-# ƒ^ƒXƒNƒXƒPƒWƒ…[ƒ‰‚©‚çƒƒOƒIƒ“‚ÉŠÇ—ÒŒ ŒÀ‚ÅÀs‚·‚é‘z’è
+ï»¿# firecrawl-searxng-setup.ps1
+# PCå†èµ·å‹•å¾Œã« WSL2 ã‚’èµ·å‹•ã—ã€Docker ã‚³ãƒ³ãƒ†ãƒŠã‚’ç«‹ã¡ä¸Šã’ã€portproxy ã‚’è¨­å®šã™ã‚‹
+# ã‚¿ã‚¹ã‚¯ã‚¹ã‚±ã‚¸ãƒ¥ãƒ¼ãƒ©ã‹ã‚‰ãƒ­ã‚°ã‚ªãƒ³æ™‚ã«ç®¡ç†è€…æ¨©é™ã§å®Ÿè¡Œã™ã‚‹æƒ³å®š
 
 $ports = @(3002, 8888)
 $composePath = "~/Projects/firecrawl/docker-compose.yaml"
 
-# --- 0. WSL2 ‚ğŠmÀ‚É‹N“®‚µADocker ƒf[ƒ‚ƒ“‚Ì€”õŠ®—¹‚ğ‘Ò‚Â ---
-Write-Host "WSL2 ‚ğ‹N“®’†..."
+# --- 0. WSL2 ã‚’ç¢ºå®Ÿã«èµ·å‹•ã—ã€Docker ãƒ‡ãƒ¼ãƒ¢ãƒ³ã®æº–å‚™å®Œäº†ã‚’å¾…ã¤ ---
+Write-Host "WSL2 ã‚’èµ·å‹•ä¸­..."
 wsl.exe -- echo "WSL booted" | Out-Null
 
-Write-Host "Docker ƒf[ƒ‚ƒ“‚Ì‹N“®‚ğ‘Ò‹@..."
+Write-Host "Docker ãƒ‡ãƒ¼ãƒ¢ãƒ³ã®èµ·å‹•ã‚’å¾…æ©Ÿ..."
 $maxRetries = 30
 for ($i = 0; $i -lt $maxRetries; $i++) {
     wsl.exe bash -c "docker info" *> $null
@@ -17,31 +17,31 @@ for ($i = 0; $i -lt $maxRetries; $i++) {
     Start-Sleep -Seconds 2
 }
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "Docker ƒf[ƒ‚ƒ“‚ª‹N“®‚µ‚Ü‚¹‚ñ‚Å‚µ‚½"
+    Write-Error "Docker ãƒ‡ãƒ¼ãƒ¢ãƒ³ãŒèµ·å‹•ã—ã¾ã›ã‚“ã§ã—ãŸ"
     exit 1
 }
 
-# --- 1. WSL2 ‚ğ‹N“®‚µ Docker ƒRƒ“ƒeƒi‚ğ—§‚¿ã‚°‚é ---
-# systemd=true ‚É‚æ‚è Docker ‚Í WSL ‹N“®‚É©“®‹N“®‚·‚é
-Write-Host "WSL2 + Docker ƒRƒ“ƒeƒi‚ğ‹N“®’†..."
+# --- 1. WSL2 ã‚’èµ·å‹•ã— Docker ã‚³ãƒ³ãƒ†ãƒŠã‚’ç«‹ã¡ä¸Šã’ã‚‹ ---
+# systemd=true ã«ã‚ˆã‚Š Docker ã¯ WSL èµ·å‹•æ™‚ã«è‡ªå‹•èµ·å‹•ã™ã‚‹
+Write-Host "WSL2 + Docker ã‚³ãƒ³ãƒ†ãƒŠã‚’èµ·å‹•ä¸­..."
 wsl.exe bash -c "docker compose -f $composePath up -d"
 
-# --- 2. WSL2 ‚Ì IP ƒAƒhƒŒƒX‚ğæ“¾ ---
+# --- 2. WSL2 ã® IP ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’å–å¾— ---
 $wslIp = (wsl.exe bash -c "hostname -I").Trim().Split()[0]
 
 if (-not $wslIp) {
-    Write-Error "WSL2 ‚Ì IP ƒAƒhƒŒƒX‚ğæ“¾‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½"
+    Write-Error "WSL2 ã® IP ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’å–å¾—ã§ãã¾ã›ã‚“ã§ã—ãŸ"
     exit 1
 }
 
 Write-Host "WSL2 IP: $wslIp"
 
-# --- 3. portproxy ‚ğİ’è ---
+# --- 3. portproxy ã‚’è¨­å®š ---
 foreach ($port in $ports) {
     netsh interface portproxy delete v4tov4 listenport=$port listenaddress=0.0.0.0 2>$null
     netsh interface portproxy add v4tov4 listenport=$port listenaddress=0.0.0.0 connectport=$port connectaddress=$wslIp
     Write-Host "Port $port -> ${wslIp}:${port}"
 }
 
-Write-Host "`nportproxy İ’èŠ®—¹:"
+Write-Host "`nportproxy è¨­å®šå®Œäº†:"
 netsh interface portproxy show all
