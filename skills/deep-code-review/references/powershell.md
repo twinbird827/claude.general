@@ -17,8 +17,7 @@ PowerShell (`.ps1`/`.psm1`/`.psd1`) failure modes for deep-code-review.
 - Stray `Write-Output`; `return $x` returning both `$x` and prior expression output.
 - Array/scalar shape breakage (`@()` coercion, `,` operator).
 
-## Encoding (repo-specific rule)
-- **`.ps1` files containing Japanese comments are intentionally Shift-JIS for PowerShell 5.1 compatibility — do NOT convert them to BOM-less UTF-8.** PS 5.1 reads BOM-less UTF-8 as ANSI(SJIS) and garbles the text.
+## Encoding
 - Missing `-Encoding` on `Out-File`/`Set-Content` (defaults differ across versions).
 
 ## Cross-cutting

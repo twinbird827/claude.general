@@ -40,6 +40,7 @@ Claude Code のグローバル設定ディレクトリ（`~/.claude`）を複数
 │   ├── permission-extension.tests.ps1  # 上の self-check
 │   ├── notify.ps1                      # Stop / Notification: 前景が VSCode でなければ MessageBox
 │   ├── ps1-utf8-bom.sh                 # PostToolUse (Write|Edit): BOM 無しの .ps1/.psm1/.psd1 に UTF-8 BOM を付ける（PS 5.1 の cp932 誤読対策）
+│   ├── ps1-utf8-bom.tests.sh           # 上の self-check
 │   └── lf-to-crlf.sh                   # PostToolUse: LF → CRLF 正規化（現在は未登録）
 ├── knowhow/                    # 導入手順と実測記録
 │   ├── headroom-setup.md               # Headroom（コンテキスト圧縮 proxy）の導入
