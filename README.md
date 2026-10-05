@@ -39,6 +39,7 @@ Claude Code のグローバル設定ディレクトリ（`~/.claude`）を複数
 │   ├── permission-extension.ps1        # PreToolUse: .tmp/ 配下の rm を自動承認し glab api は書き込み形だけ通す。ask の項目は auto 以外でだけ ask、`glab mr merge` / `gh pr merge` で始まる段は全モードで ask
 │   ├── permission-extension.tests.ps1  # 上の self-check
 │   ├── notify.ps1                      # Stop / Notification: 前景が VSCode でなければ MessageBox
+│   ├── ps1-utf8-bom.sh                 # PostToolUse (Write|Edit): BOM 無しの .ps1/.psm1/.psd1 に UTF-8 BOM を付ける（PS 5.1 の cp932 誤読対策）
 │   └── lf-to-crlf.sh                   # PostToolUse: LF → CRLF 正規化（現在は未登録）
 ├── knowhow/                    # 導入手順と実測記録
 │   ├── headroom-setup.md               # Headroom（コンテキスト圧縮 proxy）の導入
