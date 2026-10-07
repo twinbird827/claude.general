@@ -15,7 +15,7 @@ main セッションが書く。subagent へ委譲しない（プランはこの
 2. 起点を集める。issue 起点なら `~/.claude/references/git-workflow.md` の hosting 表「issue を見る」で本文とコメントの両方を読む。
 3. アンカーを接地する。プランが名指すファイル・関数・行は Read / Grep / Glob で実在を確かめ、ライブラリは Context7 で確かめる。
 4. 未確定の判断は推測で埋めず、選択肢ごと 要ユーザー判断 節へ載せる。
-5. `docs/plans/<name>.md` を doctrine の構成で書く。`<name>` は issue 起点なら `issue-<N>`、それ以外は主題から短く付ける。検証した外部事実・実測結果は 決定記録 の 事実 へ。
+5. `docs/plans/<name>.md` を doctrine の構成で書く。`<name>` は `plan-` に続けて、issue 起点なら `issue-<N>`（複数は `issue-<N1>,<N2>` とカンマ区切り）、それ以外は主題から短く付ける（例: `plan-issue-4,6`）。`plan-` は拡張子抜きのファイル名だけで実装を指示されたとき issue 本体と取り違えさせないため。検証した外部事実・実測結果は 決定記録 の 事実 へ。
 6. 完了出力。
 
 ## 完了出力
