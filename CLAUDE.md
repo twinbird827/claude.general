@@ -12,6 +12,10 @@
 ## markdown の書式
 - **markdown は文の途中で改行しない** — 1バレット・1段落を1行に収める（行長は問わない）。改行が構文の意味を持つ領域（fenced code block の中身・テーブル行・YAML frontmatter・行末2スペースの hard break）と blockquote、ツールが自動生成する markdown は対象外。
 
+## コードコメント
+- **コード内コメントは、コードから復元できない現在進行形の WHY（その実装を選んだ理由・順序や定数が持つ制約）だけにする。** 公開 API の doc comment も例外にしない。
+- 変更履歴は commit / MR、チケットは issue、仕様・設計背景は docs に置き、コメントに重ねない。
+
 ## PowerShell スクリプトの文字コード
 - **`.ps1` / `.psm1` / `.psd1` を BOM 無し（BOM 無し UTF-8・Shift-JIS）にしない** — Windows PowerShell 5.1 は BOM 無しを cp932 で読み日本語を壊す。`Write`/`Edit` 後は PostToolUse フック `hooks/ps1-utf8-bom.sh` が BOM を付ける。
 

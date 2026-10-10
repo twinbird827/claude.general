@@ -76,7 +76,7 @@ Claude Code のグローバル設定ディレクトリ（`~/.claude`）を複数
 | `code-review-to-plan` | 差分を下の 3 つのレビュー skill（`code-review-runner` が直列実行）で見て、CONFIRMED の指摘を 1 つの変更セットにまとめた実装プランを書く（その場では直さない）。スコープ外の指摘は issue に起票する | 「指摘をプラン化して」「実装後レビュー」 |
 | `standard-code-review` | 差分の正確性レビュー（確度の高いバグ・`CLAUDE.md` 準拠）。読むだけで直さない | 「コードレビューして」。`code-review-runner` からも呼ばれる |
 | `deep-code-review` | standard が構造的に見ない層（同型の横展開・根本原因・設計の波及・沈黙する失敗・回帰テスト）。C# / VB6 / VBS / PowerShell / Python | 「コードレビューして」。`code-review-runner` からも呼ばれる |
-| `simplification-review` | 過剰実装レビュー（削れるもの・stdlib で足りるもの・使われない柔軟性）。`ponytail:ponytail-review` を包む | `code-review-runner` からだけ呼ばれる（`/` 補完なし） |
+| `simplification-review` | 過剰実装レビュー（削れるもの・stdlib で足りるもの・使われない柔軟性）。`ponytail:ponytail-review` を包み、`CLAUDE.md` の `## コードコメント` 規則に反するコメントも指摘する | `code-review-runner` からだけ呼ばれる（`/` 補完なし） |
 | `codebase-docgen` | ドキュメントの無い repo に日本語ドキュメント一式（CODEMAPS / README / ONBOARDING）を生成する | 「このコードベースのドキュメントを作って」 |
 | `codebase-docsync` | 既存ドキュメントをコードに合わせて最小差分で同期する。作り直さない | 「ドキュメントをコードに合わせて更新して」 |
 
