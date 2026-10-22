@@ -22,6 +22,7 @@ Claude Code のグローバル設定ディレクトリ（`~/.claude`）を複数
 │   ├── finding-verifier.md
 │   └── plan-investigator.md
 ├── skills/                     # skill 定義。SKILL.md の frontmatter が正本
+│   ├── app-requirements/
 │   ├── code-review-to-plan/
 │   ├── codebase-docgen/
 │   ├── codebase-docsync/
@@ -35,10 +36,11 @@ Claude Code のグローバル設定ディレクトリ（`~/.claude`）を複数
 │   ├── plan-doctrine.md            # プランファイルの姿勢・書式（決定記録 節を含む）
 │   ├── review-criteria.md          # 指摘の形・重大度・クラス・Measurement・票勘定・対象引数
 │   └── git-hosting/                # gitlab.md / github.md のコマンド表
+├── rules/                      # path-scoped rule（paths に一致するファイルを触ったときだけ読み込まれる）
+│   └── powershell.md               # .ps1/.psm1/.psd1 を書く時の注意事項
 ├── hooks/
 │   ├── permission-extension.ps1        # PreToolUse: .tmp/ 配下の rm を自動承認し glab api は書き込み形だけ通す。ask の項目は auto 以外でだけ ask、`glab mr merge` / `gh pr merge` で始まる段は全モードで ask
 │   ├── permission-extension.tests.ps1  # 上の self-check
-│   ├── notify.ps1                      # Stop / Notification: 前景が VSCode でなければ MessageBox
 │   ├── ps1-utf8-bom.sh                 # PostToolUse (Write|Edit): BOM 無しの .ps1/.psm1/.psd1 に UTF-8 BOM を付ける（PS 5.1 の cp932 誤読対策）
 │   ├── ps1-utf8-bom.tests.sh           # 上の self-check
 │   └── lf-to-crlf.sh                   # PostToolUse: LF → CRLF 正規化（現在は未登録）
@@ -79,6 +81,7 @@ Claude Code のグローバル設定ディレクトリ（`~/.claude`）を複数
 | `simplification-review` | 過剰実装レビュー（削れるもの・stdlib で足りるもの・使われない柔軟性）。`ponytail:ponytail-review` を包み、`CLAUDE.md` の `## コードコメント` 規則に反するコメントも指摘する | `code-review-runner` からだけ呼ばれる（`/` 補完なし） |
 | `codebase-docgen` | ドキュメントの無い repo に日本語ドキュメント一式（CODEMAPS / README / ONBOARDING）を生成する | 「このコードベースのドキュメントを作って」 |
 | `codebase-docsync` | 既存ドキュメントをコードに合わせて最小差分で同期する。作り直さない | 「ドキュメントをコードに合わせて更新して」 |
+| `app-requirements` | ライブラリを溜めた repo の既定ブランチで既存資産を棚卸しし、対話で新規アプリの要件定義書（機能ごとの再利用判定 使う / 拡張 / 新規 と再利用元つき）を `docs/apps/<アプリ名>.md` に書く | 「要件定義して」「新しいアプリを設計して」 |
 
 ### エージェント
 
@@ -159,23 +162,6 @@ Claude Codeの `Write` / `Edit` は改行コードに LF を使う傾向があ�
 - **現在このHookは `settings.template.json` に登録していない**（Git for Windows の `core.autocrlf=true` が追跡ファイルの改行を CRLF にするため）。使う場合は `hooks.PostToolUse` に自分で追加する
 
 > ⚠️ `.gitattributes` で `text eol=lf` を強制しているプロジェクトでは git 側と衝突する可能性があるため、除外が必要な場合は `lf-to-crlf.sh` の拡張子リストから外すこと。
-
----
-
-## 🔗 Stop / Notification Hook（待ちになったらポップアップ通知）
-
-Claude Code の応答が終わって指示待ちになったとき（`Stop`）と、承認待ち・入力待ちになったとき（`Notification`）に Windows のメッセージボックスを表示する。
-
-**スクリプト:** [hooks/notify.ps1](hooks/notify.ps1)
-- `GetForegroundWindow` で前景ウィンドウのプロセスを取得し、VSCode（`Code` / `Code - Insiders` / `Code - OSS`）なら通知せず終了する（見えている画面に出しても意味がないため）
-- それ以外のときだけ `MessageBox` を表示する
-- `-Message` で本文を差し替える。`Stop` と `Notification` で同じスクリプトを使い回す
-
-**注意点:**
-- **`-File` は `~` を解決しない**（`-File パラメーターの引数 '~\...' は存在しません` で失敗する）。`-Command ". '~\...'"` で PowerShell 側にパスを解決させること
-- `MessageBoxOptions.DefaultDesktopOnly` は `Show()` の**第6引数**。第5引数は `MessageBoxDefaultButton` なので、`'Button1'` を省くと型変換エラーで落ちる
-- `MessageBox::Show` はボタンが押されるまでブロックする。Hook がタイムアウトするまで次のターンが始まらない
-- **auto モードでは ask の項目のコマンドも確認なしで実行される**（`hooks/permission-extension.ps1` が auto では無出力にし、classifier が判定する）ため、承認プロンプト自体が出ず `Notification` も発火しない。承認待ちの通知が欲しい場合は auto モードを使わないこと（例外: hook が返す `ask` は auto モードでも prompt を出すので、`.tmp/` 外の `rm`、書き込み形でない `glab api`、`glab mr merge` / `gh pr merge` で始まる段では auto でも `Notification` が発火する）
 
 ---
 

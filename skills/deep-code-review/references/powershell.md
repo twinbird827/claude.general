@@ -1,24 +1,9 @@
 # PowerShell failure-mode pack
 
-PowerShell (`.ps1`/`.psm1`/`.psd1`) failure modes for deep-code-review.
+PowerShell (`.ps1`/`.psm1`/`.psd1`) review cues for deep-code-review.
 
 ## Error suppression
-- `-ErrorAction SilentlyContinue` / `-EA 0` (and `$ErrorActionPreference = 'SilentlyContinue'`) silences failures → later code proceeds on false premises. Root: identify what can fail and replace with `-ErrorAction Stop`
-  + `try/catch`.
-- `2>$null` discarding the error stream; `$null` assignment discarding pipelines.
-- Spread: Grep other scripts for the same suppression patterns.
+- Spread: when the diff adds or removes error suppression (`-ErrorAction SilentlyContinue` / `-EA 0`, `$ErrorActionPreference = 'SilentlyContinue'`, `2>$null`, empty `catch`), Grep other scripts for the same suppression patterns.
 
-## Non-terminating vs terminating errors (correctness)
-- Cmdlet non-terminating errors are NOT caught by `try/catch` (needs `-ErrorAction Stop` or `$ErrorActionPreference='Stop'`). A "wrapped it in catch but it still isn't caught" fix is symptomatic — check for the root fix that makes the error terminating.
-- Missing `$?` / `$LASTEXITCODE` checks (external exes).
-
-## Pipeline / return semantics
-- Values **unintentionally emitted to the pipeline** inside functions pollute the return value (expressions emit even without `return`).
-- Stray `Write-Output`; `return $x` returning both `$x` and prior expression output.
-- Array/scalar shape breakage (`@()` coercion, `,` operator).
-
-## Encoding
-- Missing `-Encoding` on `Out-File`/`Set-Content` (defaults differ across versions).
-
-## Cross-cutting
-- Duplicated helper functions / parameter validation / logging (module-extraction opportunity).
+## Non-terminating vs terminating errors
+- A "wrapped it in catch but it still isn't caught" fix is symptomatic — check for the root fix that makes the error terminating (`-ErrorAction Stop` or `$ErrorActionPreference = 'Stop'`).

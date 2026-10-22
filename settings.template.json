@@ -16,6 +16,7 @@
       "Read(./**/*)",
       "Read(~/.claude/skills/**)",
       "Read(~/.claude/references/**)",
+      "Read(~/.claude/rules/**)",
       "Edit(./**/*)",
       "Bash(iconv:*)",
       "Bash(wc:*)",
@@ -134,28 +135,6 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/ps1-utf8-bom.sh"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command \". '~\\.claude\\hooks\\notify.ps1' -Message 'Task completed!'\""
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command \". '~\\.claude\\hooks\\notify.ps1' -Message 'Claude Code is waiting for you.'\""
           }
         ]
       }

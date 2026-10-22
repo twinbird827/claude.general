@@ -17,7 +17,7 @@ standard-code-review が構造的に見ない層だけを担当する。修正�
 ## 手順
 
 1. `~/.claude/references/review-criteria.md` を読む。対象を差分に解決する。
-2. 差分が触るファイルの言語を拡張子で判定し、該当する言語パック `${CLAUDE_SKILL_DIR}/references/{csharp,vb6,vbs,powershell,python}.md` だけを読む。
+2. 差分が触るファイルの言語を拡張子で判定し、該当する言語パック `${CLAUDE_SKILL_DIR}/references/{csharp,vb6,vbs,powershell,python}.md` だけを読む。PowerShell（`.ps1`/`.psm1`/`.psd1`）はあわせて `~/.claude/rules/powershell.md` も読む。
 3. 5 つの層を順に当てる。
    - 横展開 — 差分が直したのと同型の箇所を repo 全体から grep で探す。grep は自分で打ち、subagent へ委譲しない。
    - 根本原因 — 修正が症状だけを塞いでいないか。
