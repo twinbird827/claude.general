@@ -1,6 +1,6 @@
 ---
 name: plan-refinement-loop
-description: Iteratively review and harden an implementation plan (the 6-section plan under docs/plans) until a fresh plan-investigator sweep finds no Critical/Major. Adjudicates via finding-verifier, applies AUTO-FIXABLE fixes in place, routes NEEDS-USER to the user. Not for writing new plans (plan-writing), not for reviewing code (code-review-to-plan), not for specs or design docs.
+description: Iteratively review and harden an implementation plan (the plan under docs/plans) until a fresh plan-investigator sweep finds no Critical/Major. Adjudicates via finding-verifier, applies AUTO-FIXABLE fixes in place, routes NEEDS-USER to the user. Not for writing new plans (plan-writing), not for reviewing code (code-review-to-plan), not for specs or design docs.
 when_to_use: '"プランを徹底調査して", "プランを精査して指摘を反映", "investigate this plan thoroughly", "review and fix my plan"'
 ---
 
@@ -9,7 +9,7 @@ when_to_use: '"プランを徹底調査して", "プランを精査して指摘�
 ## 役割
 
 - orchestrator（main）は調査も裁定も自分でしない。調査は plan-investigator、初回スイープの simplification-review は code-review-runner、裁定は finding-verifier。例外は Measurement の実行だけ。
-- 対象は plan-doctrine の 6 節構成を持つ実装プランだけ。それ以外の文書は対象外と報告して止まる。
+- 対象は plan-doctrine の構成を持つ実装プランだけ。それ以外の文書は対象外と報告して止まる。
 - subagent へレビュー履歴を渡さない。渡すのはプロジェクト文脈、reference のパス、プランのパスだけ。決定記録 節はプラン本文の一部として読まれる。
 
 ## entry
