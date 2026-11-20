@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# PostToolUse hook: convert LF line endings to CRLF for text files
-# after Write/Edit/MultiEdit/NotebookEdit.
+# PostToolUse hook: convert LF line endings to CRLF for text files after Write/Edit/MultiEdit/NotebookEdit.
 
 set -e
 
@@ -10,7 +9,6 @@ file=$(printf '%s' "$input" | jq -r '.tool_input.file_path // .tool_input.notebo
 [ -z "$file" ] && exit 0
 [ -f "$file" ] || exit 0
 
-# Target text extensions (case-insensitive)
 shopt -s nocasematch
 case "$file" in
   *.md|*.markdown|*.txt|*.json|*.jsonc|*.json5|*.xml|*.yml|*.yaml|*.toml|*.ini|*.cfg|*.conf|*.env|*.properties|\
@@ -29,7 +27,6 @@ case "$file" in
 esac
 shopt -u nocasematch
 
-# Normalize to CRLF: strip any trailing \r, then append \r on every line.
 # Uses a tmp file to avoid partial writes.
 tmp="${file}.crlf.tmp"
 sed -e 's/\r$//' -e 's/$/\r/' "$file" > "$tmp" && mv -f "$tmp" "$file"

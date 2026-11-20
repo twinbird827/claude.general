@@ -11,6 +11,7 @@ Claude Code のグローバル設定ディレクトリ（`~/.claude`）を複数
 ├── CLAUDE.md                   # 全 PC 共通のグローバル指示
 ├── README.md                   # 本書（repo の説明と使い方）
 ├── SETUP.md                    # 新 PC の環境構築手順
+├── SETUP-tester.html           # Claude を使わないテスト担当者向けの開発環境手順書（印刷用）
 ├── RTK.md                      # rtk のメタコマンドと導入確認
 ├── settings.template.json      # チーム共有の設定テンプレート（git 管理対象）
 ├── settings.json               # 【各 PC 個別】実際に使われる設定（gitignore 対象）
@@ -39,7 +40,7 @@ Claude Code のグローバル設定ディレクトリ（`~/.claude`）を複数
 ├── rules/                      # path-scoped rule（paths に一致するファイルを触ったときだけ読み込まれる）
 │   └── powershell.md               # .ps1/.psm1/.psd1 を書く時の注意事項
 ├── hooks/
-│   ├── permission-extension.ps1        # PreToolUse: .tmp/ 配下の rm を自動承認し glab api は書き込み形だけ通す。ask の項目は auto 以外でだけ ask、`glab mr merge` / `gh pr merge` で始まる段は全モードで ask
+│   ├── permission-extension.ps1        # PreToolUse: .tmp/ 配下の rm を自動承認し glab api は書き込み形だけ通す。ask の項目は auto 以外でだけ ask、`glab mr merge` / `gh pr merge` で始まる段は全モードで ask、`powershell` / `pwsh` の `-ExecutionPolicy Bypass` は全モードで deny
 │   ├── permission-extension.tests.ps1  # 上の self-check
 │   ├── ps1-utf8-bom.sh                 # PostToolUse (Write|Edit): BOM 無しの .ps1/.psm1/.psd1 に UTF-8 BOM を付ける（PS 5.1 の cp932 誤読対策）
 │   ├── ps1-utf8-bom.tests.sh           # 上の self-check
@@ -113,7 +114,7 @@ Claude Code のグローバル設定ディレクトリ（`~/.claude`）を複数
 
 ---
 
-## 🔗 PreToolUse Hook（permission リストの拡張 — `.tmp/` 配下の rm を自動承認、`glab api` は書き込み形だけ通す、ask の項目をモード別に扱う）
+## 🔗 PreToolUse Hook（permission リストの拡張 — `.tmp/` 配下の rm を自動承認、`glab api` は書き込み形だけ通す、ask の項目をモード別に扱う、`powershell` / `pwsh` の `-ExecutionPolicy Bypass` を deny）
 
 rm 側は auto モードの無確認範囲を `.tmp/` 配下の `rm` だけに絞る。settings の `permissions.ask` は rtk が書き換えた呼び出しでは効かないため（下の モード別の実測）、`Bash(rm:*)` を掲載していた変更前は、rtk が書き換えた段を含む連結呼び出しの中の `rm` 段が deny の 2 件を除いて無確認だった（`rm` 単体は rtk に書き換えられず prompt が出ていた）。その掲載を外し、`.tmp/` 配下だけを hook の `allow` で通す。代償として、連結呼び出しの中の `.tmp/` 外の `rm` 段にも auto モードで prompt が出るようになる。許容される形から外れた形が `ask` に落ちるのは許容する（手順が作る一時ファイルは ASCII の `rm .tmp/<path>` 形に収まるため）。
 
@@ -122,7 +123,7 @@ rm 側は auto モードの無確認範囲を `.tmp/` 配下の `rm` だけに�
 ask の項目（`git push`・`glab api`・`curl` など 25 件）も同じ script が持ち、settings の `permissions.ask` は空にしてある。狙いは「auto モードでは確認無しで classifier が判定し、それ以外のモードでは確認が出る」。settings の ask ではこれを書けない — rtk が書き換えた呼び出しでは効かず classifier へ回り、書き換えが無い呼び出しでは auto モードでも prompt を出す（下の モード別の実測）。hook は auto 以外（`permission_mode` が読めないときを含む）でだけ `ask` を返し、auto では無出力にする。
 
 **スクリプト:** [hooks/permission-extension.ps1](hooks/permission-extension.ps1)
-- 判定仕様（段の分け方、`allow` / `ask` / 無出力 の 3 分岐とその条件・理由）は `hooks/permission-extension.ps1`（冒頭コメントと `[regex]::Split` の分割パターン）が正本。無出力の経路は下の `permissions.allow` のバレットが受ける
+- 判定仕様（段の分け方、`allow` / `ask` / `deny` / 無出力 の 4 分岐とその条件・理由）は `hooks/permission-extension.ps1` のコード（`[regex]::Split` の分割パターン・各判定の正規表現・プレフィックスの配列）と `hooks/permission-extension.tests.ps1` の `$cases` が正本で、条件ごとの理由は `hooks/permission-extension.ps1` の冒頭コメントにある。無出力の経路は下の `permissions.allow` のバレットが受ける
 - handler は `if` 無しで登録し、全 Bash 呼び出しで script を回す。`if` と settings の permission 規則は前方一致で、`rtk proxy glab api …` のような wrapper 前置形を拾えない（docs の wrapper 剥がしは固定リストで `rtk proxy` を含まない）。代償は呼び出しごとの powershell.exe 起動と、`ask` へ落ちる段が増えること（`git rm`、`glab mr create --description "see api docs"`、それらの語を含む自由文を argv に載せる MR タイトル・commit メッセージのような形）。stdin/JSON が読めないときに `ask` へ倒す fail-closed も、`if` があった頃の `rm` 呼び出し限定から全 Bash 呼び出しへ射程が広がっている
 - `permissions.ask` は空にしてある — 評価順は deny → ask → allow で、ask に残すと hook の allow も prompt に負ける（docs: Extend permissions with hooks）。項目の一覧は `hooks/permission-extension.ps1` の `$askPrefixes` と `$alwaysAskPrefixes` が正本
 - MR のマージ（`glab mr merge` / `gh pr merge`）は、auto モードで classifier が既定ルール `Merge Without Review` で block し、ask へのフォールバックが無い（!98 で実測、`autoMode.allow` の例外を置いても非決定的に block された）。そのため `$alwaysAskPrefixes` に分け、モードによらず `ask` を返して block の代わりに prompt を出す
@@ -131,7 +132,7 @@ ask の項目（`git push`・`glab api`・`curl` など 25 件）も同じ scrip
 
 **注意点:**
 - PowerShell で書くのは、本 repo が `core.autocrlf=true` で checkout が CRLF になり、bash スクリプトだと変数値に `\r` が混ざって正規表現が壊れるため
-- stdin の読み方（`-WindowStyle Hidden` では `[Console]::In` が空なので raw handle で読む）・ASCII 縛り・fail closed の理由は `hooks/permission-extension.ps1` の冒頭コメント
+- stdin の読み方（`-WindowStyle Hidden` では `[Console]::In` が空なので raw handle で読む）の理由は `hooks/permission-extension.ps1` の `$raw =` の直前のコメント、ASCII 縛りと fail closed の理由は同ファイルの冒頭コメントにある
 
 **モード別の実測**（2026-09-09、hook 起動後の新セッションで確認）:
 

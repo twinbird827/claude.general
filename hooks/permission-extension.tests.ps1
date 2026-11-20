@@ -1,10 +1,7 @@
-# Self-check for permission-extension.ps1: feed each command through the hook
-# and compare the permissionDecision ('' = no output = the permissions list
-# decides). A case without `mode` runs as `default`; `mode = ''` omits
-# permission_mode from the input. Run after changing any pattern in the hook:
-#   powershell.exe -NoProfile -ExecutionPolicy Bypass -File hooks/permission-extension.tests.ps1
+﻿# Self-check for permission-extension.ps1; run: powershell.exe -NoProfile -File hooks/permission-extension.tests.ps1
 $ErrorActionPreference = 'Stop'
 $hook = Join-Path $PSScriptRoot 'permission-extension.ps1'
+# No `mode` runs as `default` and `mode = ''` omits permission_mode; `want = ''` is no output (the permissions list decides).
 $cases = @(
   @{ cmd = 'rm .tmp/probe'; want = 'allow' },
   @{ cmd = 'rm -rf .tmp/plans'; want = 'allow' },
@@ -49,7 +46,27 @@ $cases = @(
   @{ cmd = 'gh pr merge 1 --merge --delete-branch'; mode = 'auto'; want = 'ask' },
   @{ cmd = 'glab mr merge 1'; want = 'ask' },
   @{ cmd = 'glab mr view 1 && glab mr merge 1'; mode = 'auto'; want = 'ask' },
-  @{ cmd = 'glab mr mergex'; mode = 'auto'; want = '' }
+  @{ cmd = 'glab mr mergex'; mode = 'auto'; want = '' },
+  @{ cmd = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File x.ps1'; want = 'deny' },
+  @{ cmd = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File x.ps1'; mode = 'auto'; want = 'deny' },
+  @{ cmd = 'powershell -ep bypass -c x'; want = 'deny' },
+  @{ cmd = 'pwsh -ExecutionPolicy:Bypass -File x.ps1'; want = 'deny' },
+  @{ cmd = 'rtk proxy powershell.exe -ExecutionPolicy Bypass -File x.ps1'; want = 'deny' },
+  @{ cmd = 'powershell.exe -NoProfile -File x.ps1'; want = '' },
+  @{ cmd = 'powershell.exe -ExecutionPolicy RemoteSigned -File x.ps1'; want = '' },
+  @{ cmd = 'git commit -m "drop -ExecutionPolicy Bypass"'; mode = 'auto'; want = '' },
+  @{ cmd = 'MSYS_NO_PATHCONV=1 powershell.exe -ExecutionPolicy Bypass -File x.ps1'; want = 'deny' },
+  @{ cmd = 'C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -ExecutionPolicy Bypass -File x.ps1'; want = 'deny' },
+  @{ cmd = 'MSYS_NO_PATHCONV=1 powershell.exe /ExecutionPolicy Bypass -File x.ps1'; want = 'deny' },
+  @{ cmd = 'powershell.exe -NoProfile -EncodedCommand ZQBjAGgAbwA= -ExecutionPolicy Bypass'; want = 'deny' },
+  @{ cmd = 'powershell.exe -NoProfile -Command "Get-ChildItem -Exclude bypass"'; want = '' },
+  @{ cmd = 'powershell.exe -NoProfile -File x.ps1 -ex bypass'; want = '' },
+  @{ cmd = 'powershell.exe -NoProfile Get-ChildItem -Exclude bypass'; want = '' },
+  @{ cmd = 'FOO=1 git push'; want = 'ask' },
+  @{ cmd = '/usr/bin/git push'; want = 'ask' },
+  @{ cmd = 'rtk proxy FOO=1 git push'; want = 'ask' },
+  @{ cmd = 'FOO=1 rtk proxy git push'; want = 'ask' },
+  @{ cmd = 'MSYS_NO_PATHCONV=1 rtk proxy powershell.exe -ExecutionPolicy Bypass -File x.ps1'; want = 'deny' }
 )
 function Decision($stdin) {
   $out = $stdin | powershell.exe -NoProfile -ExecutionPolicy Bypass -File $hook

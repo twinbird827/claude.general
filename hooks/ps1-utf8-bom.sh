@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
-# PostToolUse hook: add a UTF-8 BOM to PowerShell files (.ps1/.psm1/.psd1)
-# after Write/Edit.
+# PostToolUse hook: add a UTF-8 BOM to PowerShell files (.ps1/.psm1/.psd1) after Write/Edit.
 #
 # Windows PowerShell 5.1 reads BOM-less scripts as cp932: Japanese literals
 # break, and with LF endings a line ending in a full-width char swallows the
 # newline (the next line silently becomes part of a comment).
 # Write drops an existing BOM unless the content starts with U+FEFF; Edit keeps it.
-# Files starting with "#!" are skipped (a BOM breaks the shebang under pwsh on Linux).
-# Files with a BOM (UTF-8 / UTF-16 LE / BE) pass through (Edit writes UTF-16LE back as is; prefixing gives EF BB BF FF FE, which PS 5.1 cannot run).
-# When no BOM can be added (BOM-less UTF-16LE, temp file or write-back failure), report on stderr and exit 2; never fails the tool call.
+# "#!" files are left alone because a BOM breaks the shebang under pwsh on Linux.
+# Files that already have a BOM are left alone because Edit writes UTF-16LE back as is, and prefixing gives EF BB BF FF FE, which PS 5.1 cannot run.
+# Failures exit 2 so stderr reaches Claude, which can fix the file, without failing the tool call.
 
 input=$(cat)
 [[ $input =~ \"file_path\"[[:space:]]*:[[:space:]]*\"([^\"]*)\" ]] || exit 0

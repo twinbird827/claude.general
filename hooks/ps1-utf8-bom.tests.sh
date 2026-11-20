@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Self-check for ps1-utf8-bom.sh. Exits non-zero if any case fails.
-# Usage: bash hooks/ps1-utf8-bom.tests.sh
+# Self-check for ps1-utf8-bom.sh (exits non-zero on any failure); usage: bash hooks/ps1-utf8-bom.tests.sh
 
 hook=$(dirname "$0")/ps1-utf8-bom.sh
 dir=$(cd "$(dirname "$0")/.." && pwd)/.tmp/ps1-utf8-bom-tests
@@ -43,7 +42,6 @@ t empty.ps1    ''                   efbbbf
 TMPDIR=/nonexistent t tmpfail.ps1 'ab' 6162 2
 [[ $err == *ps1-utf8-bom:* ]]; report tmpfail.ps1-stderr $? "err=$err"
 
-# Write-back failure: file untouched, exit 2, temp file named on stderr keeps BOM + original.
 f=$dir/readonly.ps1
 printf 'ab' > "$f"; chmod 444 "$f"
 run "$f"

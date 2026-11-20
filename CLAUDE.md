@@ -64,5 +64,10 @@
 - 除外外のコマンドで出力が薄いと感じたら `rtk proxy <cmd>` で生実行して確かめ、常用するなら除外へ足す。`rtk proxy` は引用符付き glob を保てない（cwd のファイル名へ展開され、無言で別条件になる）ので、glob を含むときはコマンド全体を単引用符で `sh -c` に包む。
 - rtk 自体の使い方（メタコマンド・導入確認・名前衝突）は `~/.claude/RTK.md`。
 
+## Windows のシェル呼び出し
+- Bash tool は Git Bash（MSYS）。`powershell.exe -NoProfile -Command` は**単引用符**で渡す — 二重引用符だと bash が `$_`・`$id`・`${}` を先に展開して script が壊れる。PS の文字列リテラルは内側で二重引用符を使う。数行を超える処理は `.ps1` に書いて `-File` で実行する。
+- `/flag` 形式の引数を取る Windows ネイティブ exe（`schtasks`・`robocopy`・`reg` 等）は `MSYS_NO_PATHCONV=1` を前置する。前置しないと MSYS が `/Create` を `C:/Program Files/Git/Create` に書き換える。
+- リダイレクトは `> /dev/null`。`> $null` は bash では空変数になり、`ambiguous redirect`（終了コード 1）でコマンドが実行されない。
+
 ## 日時の扱い
 - 最新情報を扱うときは system context の `currentDate` を参照し年月日を正しく使う（推測・古い日付を使わない）。

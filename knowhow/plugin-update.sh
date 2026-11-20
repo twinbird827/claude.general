@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-# Daily plugin updater: refresh every marketplace, then update every installed
-# plugin. Plugin list is discovered dynamically from `claude plugin list`, so a
-# newly added plugin is picked up with no edit here.
-# Invoked by the Task Scheduler task "claude-plugin-update".
+# Daily updater run by the Task Scheduler task "claude-plugin-update": refresh every marketplace and update every installed plugin.
+# The plugin list is read from `claude plugin list` on each run, so a newly
+# added plugin needs no edit here.
 # ponytail: no set -e / no pipefail on purpose — one plugin failing must not
 # abort the rest. An empty plugin list means no update ran at all, so it is a failure.
 

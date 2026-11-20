@@ -477,7 +477,7 @@ networkingMode=NAT
 **自動設定（推奨）:** タスクスケジューラに登録済みの `firecrawl-searxng-setup.ps1` がログオン時に自動実行される。手動実行する場合は管理者 PowerShell で：
 
 ```powershell
-powershell.exe -ExecutionPolicy Bypass -File "C:\Users\horie\.claude\knowhow\firecrawl-searxng-setup.ps1"
+powershell.exe -NoProfile -File "C:\Users\horie\.claude\knowhow\firecrawl-searxng-setup.ps1"
 ```
 
 **手動設定の場合:**
